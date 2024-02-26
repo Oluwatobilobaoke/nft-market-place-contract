@@ -26,9 +26,17 @@ describe("Marketplace", () => {
 
   describe("Minting", () => {
     it("Should mint an NFT", async () => {
-      const { owner, nft } = await deployContracts();
-      await nft.safeMint(owner.address, "https://token-uri.com");
-      const balance = await nft.balanceOf(owner.address);
+      const { addr1, nft } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+      const balance = await nft.balanceOf(addr1.address);
       expect(balance).to.equal(1);
     });
   });
