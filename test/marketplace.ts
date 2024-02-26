@@ -147,4 +147,25 @@ describe("Marketplace", () => {
       expect(await ethers.provider.getBalance(nft.target)).to.equal(0);
     });
   });
+
+  describe("NFT Transfer", () => {
+    it("Should transfer an NFT", async () => {
+      const { addr1, addr2, nft, marketplace } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      // Transfer the NFT
+      await nft.connect(addr1).transferFrom(addr1.address, addr2.address, 0);
+
+      const balance = await nft.balanceOf(addr2.address);
+      expect(balance).to.equal(1);
+    });
+  });
 });
