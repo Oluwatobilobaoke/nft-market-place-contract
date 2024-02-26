@@ -168,4 +168,84 @@ describe("Marketplace", () => {
       expect(balance).to.equal(1);
     });
   });
+
+  describe("NFT Burn", () => {
+    it("Should burn an NFT", async () => {
+      const { addr1, nft } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      // Burn the NFT
+      await nft.connect(addr1).burn(0);
+
+      const balance = await nft.balanceOf(addr1.address);
+      expect(balance).to.equal(0);
+    });
+
+    it("Should not burn an NFT that does not exist", async () => {
+      const { addr1, nft } = await deployContracts();
+
+      await expect(nft.connect(addr1).burn(0)).to.be.reverted;
+    });
+
+    it("Should not burn an NFT that is not owned", async () => {
+      const { addr1, addr2, nft } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      await expect(nft.connect(addr2).burn(0)).to.be.reverted;
+    });
+  });
+
+  describe("NFT Ownership transfer", () => {
+    it("Should transfer NFT ownership", async () => {
+      const { addr1, addr2, nft } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      // Transfer the NFT
+      await nft.connect(addr1).transferFrom(addr1.address, addr2.address, 0);
+
+      const balance = await nft.balanceOf(addr2.address);
+      expect(balance).to.equal(1);
+    });
+
+    it("Should not transfer NFT ownership if not owner", async () => {
+      const { addr1, addr2, nft } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      await expect(
+        nft.connect(addr2).transferFrom(addr1.address, addr2.address, 0)
+      ).to.be.reverted;
+    });
+  });
 });
