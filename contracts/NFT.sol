@@ -9,15 +9,48 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
     uint256 private _tokenIdCounter;
 
+    //  _price is the price of one NFT
+    uint256 public _price = 0.002 ether;
+
+    // _paused is used to pause the contract in case of an emergency
+    bool public _paused;
+
     constructor(
         address initialOwner
     ) ERC721("ClassWork", "CLW") Ownable(initialOwner) {}
 
-    function safeMint(address to, string memory uri) external onlyOwner {
+    modifier onlyWhenNotPaused() {
+        require(!_paused, "Contract currently paused");
+        _;
+    }
+
+    function safeMint(
+        address to,
+        string memory uri
+    ) external payable onlyWhenNotPaused {
+        require(msg.value >= _price, "Ether sent is not correct");
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter++;
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
+    }
+
+    /**
+     * @dev setPaused makes the contract paused or unpaused
+     */
+    function setPaused(bool val) public onlyOwner {
+        _paused = val;
+    }
+
+    /**
+     * @dev withdraw sends all the ether in the contract
+     * to the owner of the contract
+     */
+    function withdraw() external onlyOwner {
+        address _owner = owner();
+        uint256 amount = address(this).balance;
+        (bool sent, ) = _owner.call{value: amount}("");
+        require(sent, "Failed to send Ether");
     }
 
     // The following functions are overrides required by Solidity.
