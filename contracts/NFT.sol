@@ -38,7 +38,7 @@ contract NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
     /**
      * @dev setPaused makes the contract paused or unpaused
      */
-    function setPaused(bool val) public onlyOwner {
+    function setPaused(bool val) external onlyOwner {
         _paused = val;
     }
 
