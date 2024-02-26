@@ -89,5 +89,32 @@ describe("Marketplace", () => {
       const balance = await nft.balanceOf(addr2.address);
       expect(balance).to.equal(1);
     });
+
+    it("Should not buy an NFT with insufficient funds", async () => {
+      const { addr1, addr2, nft, marketplace } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      // List the NFT
+      await nft.connect(addr1).setApprovalForAll(marketplace.target, true);
+
+      await marketplace
+        .connect(addr1)
+        .createListing(0, nft.target, ethers.parseEther("0.01"));
+
+      // Buy the NFT
+      await expect(
+        marketplace.connect(addr2).buyListing(0, nft.target, {
+          value: ethers.parseEther("0.005"),
+        })
+      ).to.be.revertedWith("Value sent does not meet list price for NFT");
+    });
   });
 });
