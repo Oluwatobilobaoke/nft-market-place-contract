@@ -117,4 +117,34 @@ describe("Marketplace", () => {
       ).to.be.revertedWith("Value sent does not meet list price for NFT");
     });
   });
+
+  describe("Withdraw", () => {
+    it("Should withdraw funds", async () => {
+      const { owner, addr1, addr2, nft, marketplace } = await deployContracts();
+
+      const depositAmount = ethers.parseEther("0.002");
+
+      // Mint an NFT
+      await nft
+        .connect(addr1)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      await nft
+        .connect(addr2)
+        .safeMint(addr1.address, "https://token-uri.com", {
+          value: depositAmount,
+        });
+
+      await nft.safeMint(owner.address, "https://token-uri.com", {
+        value: depositAmount,
+      });
+
+      // Withdraw funds
+      await nft.connect(owner).withdraw();
+
+      expect(await ethers.provider.getBalance(nft.target)).to.equal(0);
+    });
+  });
 });

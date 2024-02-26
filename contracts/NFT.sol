@@ -53,6 +53,10 @@ contract NFT is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         require(sent, "Failed to send Ether");
     }
 
+    function getContractBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
     // The following functions are overrides required by Solidity.
     function tokenURI(
         uint256 tokenId
